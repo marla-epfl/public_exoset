@@ -1,0 +1,41 @@
+name: Build
+on:
+  push:
+    paths-ignore:
+      - '*.pdf'
+  pull_request:
+    branches:
+      - master
+defaults: 
+  run:
+    shell: bash
+jobs:
+  build_latex:
+    runs-on: ubuntu-latest
+    container:
+      image: danteev/texlive:latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Python
+      uses: actions/setup-python@v2
+    - name: Install dependencies
+      run: |
+        python3 --version
+        echo "installing pip"
+        python3 -m pip install --user --upgrade pip requests  
+        which pip
+        which pip3
+    - name: Build LaTeX
+      run: |
+        echo "pull number"${{ github.sha }}
+        dir_to_compile=( $(python .github/workflows/get_directory_to_compile.py ${{ github.repository }} 24 ${{ secrets.GITHUB_TOKEN }} ) )
+        echo "dir to compile value $dir_to_compile"
+        for dir in $dir_to_compile; do
+          cd $PWD/$dir
+          enonce="Compile_${dir}_ENONCE"
+          solution="Compile_${dir}_ENONCE_SOLUTION"
+          latexmk -synctex=1 -interaction=nonstopmode -file-line-error -pdf -outdir=. $enonce;
+          latexmk -synctex=1 -interaction=nonstopmode -file-line-error -pdf -outdir=. $solution;
+          cd ..
+        done
