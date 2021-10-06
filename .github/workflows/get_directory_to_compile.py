@@ -1,3 +1,8 @@
+from os.path import isdir
+from os import listdir
+import requests
+from sys import argv
+
 def get_directory_to_compile(repository, pull_request_number):#, access_token):
   # token = 'token '+ access_token
   url = 'https://api.github.com/repos/' + repository + '/pulls/'+ str(pull_request_number) + '/files'
